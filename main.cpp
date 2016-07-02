@@ -22,18 +22,51 @@ set-ups, lammps parameters
 #include <fstream>
 #include <cstdlib>
 #include <vector>
+#include "bond.h"
 #include "config.h"
 #include "atom.h"
-#include "optim.h"
-
-using namespace std;
+#include "polygon.h"
 
 int main()
 {
-    cout << "dislocMMC v.0.22" << endl;
+    std::cout << "dislocMMC v.0.43" << std::endl;
 
-    Config config("data.in");
+    //initial configuration
+    std::string inconfig = "data.in";
+    std::string polyfile = "poly.xyz";
+    std::string outfile = "traj.xyz";
+    std::string bondfile = "bonds.xyz";
+    std::vector<Polygon> polys;
+    std::vector<Bond> bonds;
 
+    Config config(inconfig);
+
+    long natoms = config.nat();
+
+    double cutof = 1.5;
+
+    int berror = config.getbondlist(cutof);
+    long nbnd = config.getn2();
+    std::cout << "numbnd " << nbnd << std::endl;
+    nbnd = config.getn3();
+    std::cout << "numn3 " << nbnd << std::endl;
+    nbnd = config.getn4();
+    std::cout << "numn4 " << nbnd << std::endl;
+    nbnd = config.getn5();
+    std::cout << "numn5 " << nbnd << std::endl;
+    nbnd = config.getPents(polys);
+    std::cout << "numn pents " << nbnd << " " << polys.size() << std::endl;
+    polys.clear();
+    nbnd = config.getHepts(polys);
+    std::cout << "numn hepts " << nbnd << " " << polys.size() << std::endl;
+    nbnd = config.getBonds(bonds);
+    std::cout << "numn bonds " << nbnd << " " << bonds.size() << std::endl;
+
+    config.write(outfile);
+    config.writePoly(polyfile);
+    config.writeBonds(bondfile);
+
+    double en = config.relax();
 
     return 0;
 }

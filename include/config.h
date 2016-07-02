@@ -13,10 +13,10 @@
 class Config
 {
     public:
-        Config(std::string infile); //construct object with input file
+        Config(std::string& infile); //construct object with input file
         virtual ~Config();
-        int getbondlist(); // get the bond list
-        long getn2(double cutoff); //find all bonds
+        int getbondlist(double cutoff); // get the bond list
+        long getn2(); //find all bonds
         long getn3(); //find all 3 sequentially bonded atoms
         long getn4(); // find all 4 sequentially bonded atoms
         long getn5(); // find all 5 sequentially bonded atoms
@@ -27,10 +27,18 @@ class Config
         long rotate(long ibnd); //rotate the bond pair of index ibnd (return success)
         long getCoords(std::vector<Atom>& coords); //get the atomic coordinates
         long nat() { return m_nat; } //get the number of atoms in the configuration
+        int ipm(int n); //modular function for pentagon
+        int ihm(int n); //modular function for heptagon
+
+        double relax();  //optimise the configuration by calling LAMMPS and return the final energy
+
+        void write(std::string& configfile); //write the system coordintes to configfile in XYZ format
+        void writePoly(std::string& polyfile); //write pentagon and hepatgon coordinates to file
+        void writeBonds(std::string& bondfile); //write the active bond coordinates to file
+
     private:
         long m_nat; //number of atoms
         std::vector<Atom> m_coords; //atomic coordinates
-        double bounds [5]; //periodic boundary conditions
 
         //working arrays for structure scanning
         std::vector<long> m_b1;  //atomic bond table
@@ -58,7 +66,7 @@ class Config
         std::vector<Polygon> m_hept;
         std::vector<Bond> m_bonds; //list of all the potential bond rotation pairs (5-7 intersects)
         double m_en; //configuration energy
-
+        double bounds [5]; //periodic boundary conditions
 };
 
 #endif // CONFIG_H

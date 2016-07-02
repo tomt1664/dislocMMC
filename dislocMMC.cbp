@@ -13,6 +13,8 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
+					<Add directory="/home/feps/chstf/tt0014/c/dislocMMC/src/" />
+					<Add directory="/home/feps/chstf/tt0014/c/dislocMMC/include/" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -32,7 +34,17 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Unit filename="include/atom.h" />
+		<Unit filename="include/bond.h" />
+		<Unit filename="include/config.h" />
+		<Unit filename="include/optim.h" />
+		<Unit filename="include/polygon.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="src/atom.cpp" />
+		<Unit filename="src/bond.cpp" />
+		<Unit filename="src/config.cpp" />
+		<Unit filename="src/optim.cpp" />
+		<Unit filename="src/polygon.cpp" />
 		<Extensions>
 			<code_completion />
 			<debugger />
