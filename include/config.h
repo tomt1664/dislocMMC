@@ -13,7 +13,8 @@
 class Config
 {
     public:
-        Config(std::string& infile); //construct object with input file
+        Config(std::string& infile); //construct config object with input file
+        Config(std::vector<Atom>& inconf); //constrct config object with atom vector
         virtual ~Config();
         int getbondlist(double cutoff); // get the bond list
         long getn2(); //find all bonds
@@ -24,6 +25,10 @@ class Config
         long getPents(std::vector<Polygon>& pents); //get a list of all the pentagons in the system (return number)
         long getHepts(std::vector<Polygon>& hepts); //get a list of all the heptagons in the system (return number)
         long getBonds(std::vector<Bond>& bonds); //get a list of all the bond rotation pairs (return number)
+
+        long analyse(double cutoff, std::vector<Bond>& bondl);
+        long update(double cutoff, long ibnd);
+
         long rotate(long ibnd); //rotate the bond pair of index ibnd (return success)
         long getCoords(std::vector<Atom>& coords); //get the atomic coordinates
         long nat() { return m_nat; } //get the number of atoms in the configuration

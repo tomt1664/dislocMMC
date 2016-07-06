@@ -15,5 +15,6 @@ min_style cg
 minimize 1e-15 1e-15 300 300 
 
 dump    1 all xyz 100 dump.xyz
+dump    2 all atom 100 dump.min
 
 minimize 1e-15 1e-15 1 1 

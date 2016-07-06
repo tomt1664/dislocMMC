@@ -29,21 +29,27 @@ set-ups, lammps parameters
 
 int main()
 {
-    std::cout << "dislocMMC v.0.43" << std::endl;
+    std::cout << "dislocMMC v.0.48" << std::endl;
 
     //initial configuration
     std::string inconfig = "data.in";
+
+    //output files
     std::string polyfile = "poly.xyz";
     std::string outfile = "traj.xyz";
     std::string bondfile = "bonds.xyz";
+
     std::vector<Polygon> polys;
     std::vector<Bond> bonds;
 
     Config config(inconfig);
 
-    long natoms = config.nat();
+//    long natoms = config.nat();
 
-    double cutof = 1.5;
+    double cutof = 1.8;
+
+ //   long nbnd = config.analyse(cutof,bonds);
+
 
     int berror = config.getbondlist(cutof);
     long nbnd = config.getn2();
@@ -60,13 +66,20 @@ int main()
     nbnd = config.getHepts(polys);
     std::cout << "numn hepts " << nbnd << " " << polys.size() << std::endl;
     nbnd = config.getBonds(bonds);
-    std::cout << "numn bonds " << nbnd << " " << bonds.size() << std::endl;
+
+    std::cout << "numn bonds " << nbnd << std::endl;
+
 
     config.write(outfile);
     config.writePoly(polyfile);
     config.writeBonds(bondfile);
 
     double en = config.relax();
+    std::cout << " en " << en << std::endl;
+
+    nbnd = config.update(cutof,1);
+
+    std::cout << "nbnd update " << nbnd << std::endl;
 
     return 0;
 }

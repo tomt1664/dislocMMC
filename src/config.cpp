@@ -55,6 +55,20 @@ Config::Config(std::string& infile)
     std::cout << "Read in " << m_coords.size() << " atoms" << std::endl;
 }
 
+//atom list constructor (with open boundary conditions)
+Config::Config(std::vector<Atom>& inconf)
+{
+    //copy inconf to private coordinates
+    m_coords = inconf;
+    m_nat = m_coords.size();
+    bounds[0] = -10000.0;
+    bounds[1] = 10000.0;
+    bounds[2] = -10000.0;
+    bounds[3] = 10000.0;
+    bounds[4] = -10000.0;
+    bounds[5] = 100000.0;
+}
+
 Config::~Config() //default destructor
 {
     //dtor
@@ -648,7 +662,7 @@ int Config::ihm(int n)
 //optimise the configuration by calling LAMMPS and return the final energy
 double Config::relax()
 {
-    double energy = 0.0;
+    double en_init,en_pen,en_final; //potential energies during the optimisation
     //write the LAMMPS data file
     std::ofstream lammps("data.rot",std::ios::trunc);
     lammps << "LAMMPS dislocMMC optimisation" << std::endl;
@@ -689,6 +703,7 @@ double Config::relax()
     std::string line;
     std::stringstream ss; //use stringstream
     int count = 0;
+    int suc = 0;
     while(std::getline(logfile, line))
     {
         count++;
@@ -698,17 +713,140 @@ double Config::relax()
             std::getline(logfile, line);
 
             std::string attype;
-            double en_init,en_pen,en_final; //potential energies during the optimisation
 
             ss << line;
             ss >> en_init >> en_pen >> en_final;
             ss.clear();
             ss.str(""); //clear stringsteam
-
-            std::cout << "line "<< en_final << std::endl;
+            suc = 1;
         }
     }
+    logfile.close();
+    if(suc == 0)
+    {
+        std::cout << "Error: LAMMPS energy output not found" << std::endl;
+        exit(1);
+    }
+
+    //read in the optimised coordinates from the LAMMPS dumpfile
+    std::ifstream dumpfile("dump.xyz");
+    std::getline(dumpfile, line);
+    long lmp_nat;
+    ss << line;
+    ss >> lmp_nat;
+    if(lmp_nat != m_nat)
+    {
+        std::cout << "Error: LAMMPS output configuration discrepancy" << std::endl;
+        exit(1);
+    }
+    std::getline(dumpfile, line);   //skip line
+    for(int i = 0; i < m_nat; i++)
+    {
+        double xt,yt,zt;
+        std::getline(logfile, line);
+        ss << line;
+        ss >> suc >> xt >> yt >> zt;
+        m_coords[i].setPos(xt,yt,zt);
+    }
+    dumpfile.close();
+
+    //read in the simulation cell size dimensions
+    std::ifstream cellfile("dump.min");
+    for(int i = 0; i < 5; i++) std::getline(cellfile, line);
+    std::getline(cellfile, line);
+    ss << line;
+    ss >> bounds[0] >> bounds[1];
+    ss >> bounds[2] >> bounds[3];
+    ss >> bounds[4] >> bounds[5];
+    cellfile.close();
 
     m_en = en_final;
     return en_final;
 }
+
+//function to call all the methods required to determine the rotation bond list
+long Config::analyse(double cutoff,std::vector<Bond>& bonds)
+{
+    std::vector<Polygon> polys;
+    int berror = getbondlist(cutoff);
+    if(berror)
+    {
+        std::cout << "Error: in create bond list" << std::endl;
+        exit(1);
+    }
+
+    long nbnd = getn2();
+    nbnd = getn3();
+    nbnd = getn4();
+    nbnd = getn5();
+    nbnd = getPents(polys);
+    polys.clear();
+    nbnd = getHepts(polys);
+    nbnd = getBonds(bonds);
+
+    return nbnd;
+}
+
+//function to update the bond rotation list after a structural change
+//only changes within 15 A of the changed bond are analysed
+long Config::update(double cutoff, long ibnd)
+{
+    //get the rotated bond indices and centrepoint
+    Atom at1,at2;
+    Atom midp;
+    midp = m_bonds[ibnd].midpoint();
+
+    //remove all bonds within 15 A of selected
+    std::vector<Bond> newbondl;
+    int nbl = 0;
+    for(unsigned i = 0; i < m_bonds.size(); i++)
+    {
+        m_bonds[i].coords(at1,at2);
+        double dist1 = midp.dist(at1);
+        double dist2 = midp.dist(at2);
+
+        if(dist1 > 15.0 && dist2 > 15.0)
+        {
+            newbondl.push_back(m_bonds[i]);
+            nbl++;
+        }
+    }
+
+    //create configuration of atoms within 20 A of selected
+
+    std::vector<Atom> coords;
+    for(int i=0; i < m_nat; i++)
+    {
+        if(m_coords[i].dist(midp) < 20.0)
+        {
+            coords.push_back(m_coords[i]);
+        }
+    }
+
+   //create configuration
+   Config fragment(coords);
+   std::vector<Bond> fragbond;
+   long nbnd = fragment.analyse(cutoff,fragbond);
+
+   //add new bonds within 15 A to the newbond vector
+    for(int i=0; i < nbnd; i++)
+    {
+        Atom att1, att2;
+        fragbond[i].coords(att1,att2);
+        double dist1 = midp.dist(att1);
+        double dist2 = midp.dist(att2);
+        if(dist1 < 15.0 && dist2 < 15.0)
+        {
+            newbondl.push_back(fragbond[i]);
+        }
+    }
+
+    m_bonds.clear();
+
+    m_bonds = newbondl;
+
+    nbnd = newbondl.size();
+
+    return nbnd;
+}
+

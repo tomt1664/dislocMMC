@@ -12,6 +12,7 @@ class Bond
         virtual ~Bond();
         void coords(Atom& at1, Atom& at2);
         void index(long& i1, long& i2);
+        Atom midpoint();
     private:
         Atom m_atom1; //coordinates of atom 1
         Atom m_atom2; //coordinates of atom 2

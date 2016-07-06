@@ -24,6 +24,17 @@ void Bond::index(long& i1, long& i2)
     i2 = m_i2;
 }
 
+//return an atom object containing the midpoint of the bond
+Atom Bond::midpoint()
+{
+    double xt,yt,zt;
+    xt = m_atom2.getx() + (m_atom1.getx() - m_atom2.getx())/2.0;
+    yt = m_atom2.gety() + (m_atom1.gety() - m_atom2.gety())/2.0;
+    zt = m_atom2.getz() + (m_atom1.getz() - m_atom2.getz())/2.0;
+    Atom atom(xt,yt,zt);
+    return atom;
+}
+
 Bond::~Bond()
 {
     //dtor
