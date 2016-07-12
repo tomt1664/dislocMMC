@@ -1,9 +1,24 @@
+/****************************************************
+**  dislocMMC
+**
+**  A Metropolis Monte Carlo algorithm to model the
+**  evolution of structure in defective sp2 bonded
+**  carbon systems
+**
+**  The code calls the LAMMPS atomistic simulation
+**  program for structural optimisation with a
+**  reactive force-field
+**
+**  T.Trevethan 2016
+*****************************************************/
+
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <sstream>
 #include <cstdlib>
 #include <vector>
+#include <cmath>
 #include "config.h"
 #include "polygon.h"
 
@@ -55,18 +70,16 @@ Config::Config(std::string& infile)
     std::cout << "Read in " << m_coords.size() << " atoms" << std::endl;
 }
 
-//atom list constructor (with open boundary conditions)
-Config::Config(std::vector<Atom>& inconf)
+//atom list constructor
+Config::Config(std::vector<Atom>& inconf, double nbounds[5])
 {
     //copy inconf to private coordinates
     m_coords = inconf;
     m_nat = m_coords.size();
-    bounds[0] = -10000.0;
-    bounds[1] = 10000.0;
-    bounds[2] = -10000.0;
-    bounds[3] = 10000.0;
-    bounds[4] = -10000.0;
-    bounds[5] = 100000.0;
+    for(int i=0; i < 6; i++)
+    {
+        bounds[i] = nbounds[i];
+    }
 }
 
 Config::~Config() //default destructor
@@ -87,7 +100,7 @@ int Config::getbondlist(double cutoff) // get the bond list
         {
             if(i != ii)
             {
-                double bd = m_coords[i].dist(m_coords[ii]);
+                double bd = m_coords[i].dist(m_coords[ii],bounds);
                 if(bd < cutoff) //if separation within cutoff then create bond
                 {
                     if(ib > 3)
@@ -742,8 +755,10 @@ double Config::relax()
     std::getline(dumpfile, line);   //skip line
     for(int i = 0; i < m_nat; i++)
     {
+        ss.clear();
+        ss.str(""); //clear stringsteam
         double xt,yt,zt;
-        std::getline(logfile, line);
+        std::getline(dumpfile, line);
         ss << line;
         ss >> suc >> xt >> yt >> zt;
         m_coords[i].setPos(xt,yt,zt);
@@ -794,7 +809,9 @@ long Config::update(double cutoff, long ibnd)
     //get the rotated bond indices and centrepoint
     Atom at1,at2;
     Atom midp;
-    midp = m_bonds[ibnd].midpoint();
+    midp = m_bonds[ibnd].midpoint(bounds);
+
+    std::cout << midp.getx() << " " << midp.gety() << std::endl;
 
     //remove all bonds within 15 A of selected
     std::vector<Bond> newbondl;
@@ -802,8 +819,8 @@ long Config::update(double cutoff, long ibnd)
     for(unsigned i = 0; i < m_bonds.size(); i++)
     {
         m_bonds[i].coords(at1,at2);
-        double dist1 = midp.dist(at1);
-        double dist2 = midp.dist(at2);
+        double dist1 = midp.dist(at1,bounds);
+        double dist2 = midp.dist(at2,bounds);
 
         if(dist1 > 15.0 && dist2 > 15.0)
         {
@@ -813,18 +830,17 @@ long Config::update(double cutoff, long ibnd)
     }
 
     //create configuration of atoms within 20 A of selected
-
     std::vector<Atom> coords;
     for(int i=0; i < m_nat; i++)
     {
-        if(m_coords[i].dist(midp) < 20.0)
+        if(m_coords[i].dist(midp,bounds) < 20.0)
         {
             coords.push_back(m_coords[i]);
         }
     }
 
    //create configuration
-   Config fragment(coords);
+   Config fragment(coords, bounds);
    std::vector<Bond> fragbond;
    long nbnd = fragment.analyse(cutoff,fragbond);
 
@@ -833,8 +849,8 @@ long Config::update(double cutoff, long ibnd)
     {
         Atom att1, att2;
         fragbond[i].coords(att1,att2);
-        double dist1 = midp.dist(att1);
-        double dist2 = midp.dist(att2);
+        double dist1 = midp.dist(att1,bounds);
+        double dist2 = midp.dist(att2,bounds);
         if(dist1 < 15.0 && dist2 < 15.0)
         {
             newbondl.push_back(fragbond[i]);
@@ -850,3 +866,38 @@ long Config::update(double cutoff, long ibnd)
     return nbnd;
 }
 
+//rotate the specified bond index by 90 degrees in the plane defined by the 3 nearest neighbours
+int Config::rotate(long ibnd)
+{
+    double const pi = 3.14257;
+    double theta = pi/2.0;
+    //get the rotate bond indices and centrepoint
+    long ib1,ib2;
+    Atom midp;
+    midp = m_bonds[ibnd].midpoint(bounds);
+    m_bonds[ibnd].index(ib1,ib2);
+
+    //get coordinates and centre on the midpoint
+    double x1c = m_coords[ib1].getx() - midp.getx();
+    double y1c = m_coords[ib1].gety() - midp.gety();
+    double z1c = m_coords[ib1].getz() - midp.getz();
+
+    double x2c = m_coords[ib2].getx() - midp.getx();
+    double y2c = m_coords[ib2].gety() - midp.gety();
+    double z2c = m_coords[ib2].getz() - midp.getz();
+
+    //rotate about the midpoint
+    double x1r = x1c*cos(theta) - y1c*sin(theta) + midp.getx();
+    double y1r = x1c*sin(theta) + y1c*cos(theta) + midp.gety();
+    double z1r = z1c + midp.getz();
+
+    double x2r = x2c*cos(theta) - y2c*sin(theta) + midp.getx();
+    double y2r = x2c*sin(theta) + y2c*cos(theta) + midp.gety();
+    double z2r = z2c + midp.getz();
+
+    //update coordinates
+    m_coords[ib1].setPos(x1r,y1r,z1r);
+    m_coords[ib2].setPos(x2r,y2r,z2r);
+
+    return 1;
+}

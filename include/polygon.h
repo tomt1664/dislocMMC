@@ -1,3 +1,17 @@
+/****************************************************
+**  dislocMMC
+**
+**  A Metropolis Monte Carlo algorithm to model the
+**  evolution of structure in defective sp2 bonded
+**  carbon systems
+**
+**  The code calls the LAMMPS atomistic simulation
+**  program for structural optimisation with a
+**  reactive force-field
+**
+**  T.Trevethan 2016
+*****************************************************/
+
 #ifndef POLYGON_H
 #define POLYGON_H
 

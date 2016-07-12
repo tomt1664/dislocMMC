@@ -9,14 +9,8 @@
 **  program for structural optimisation with a
 **  reactive force-field
 **
+**  T.Trevethan 2016
 *****************************************************/
-
-/*
-
-Objects: configurations, atoms, rings
-set-ups, lammps parameters
-
-*/
 
 #include <iostream>
 #include <fstream>
@@ -29,7 +23,7 @@ set-ups, lammps parameters
 
 int main()
 {
-    std::cout << "dislocMMC v.0.48" << std::endl;
+    std::cout << "dislocMMC v.0.51" << std::endl;
 
     //initial configuration
     std::string inconfig = "data.in";
@@ -77,9 +71,18 @@ int main()
     double en = config.relax();
     std::cout << " en " << en << std::endl;
 
+    config.rotate(2);
+
     nbnd = config.update(cutof,1);
 
     std::cout << "nbnd update " << nbnd << std::endl;
+
+    en = config.relax();
+    std::cout << " en " << en << std::endl;
+
+    config.write(outfile);
+    config.writePoly(polyfile);
+    config.writeBonds(bondfile);
 
     return 0;
 }

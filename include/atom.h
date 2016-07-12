@@ -1,3 +1,17 @@
+/****************************************************
+**  dislocMMC
+**
+**  A Metropolis Monte Carlo algorithm to model the
+**  evolution of structure in defective sp2 bonded
+**  carbon systems
+**
+**  The code calls the LAMMPS atomistic simulation
+**  program for structural optimisation with a
+**  reactive force-field
+**
+**  T.Trevethan 2016
+*****************************************************/
+
 #ifndef ATOM_H
 #define ATOM_H
 
@@ -14,7 +28,7 @@ class Atom
         double gety() { return m_y; }
         double getz() { return m_z; }
 
-        double dist(Atom at); //method to return the distance to a second atom
+        double dist(Atom at, double bounds[5]); //method to return the distance to a second atom
     private:
         double m_x;
         double m_y;

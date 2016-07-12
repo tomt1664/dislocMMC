@@ -1,3 +1,17 @@
+/****************************************************
+**  dislocMMC
+**
+**  A Metropolis Monte Carlo algorithm to model the
+**  evolution of structure in defective sp2 bonded
+**  carbon systems
+**
+**  The code calls the LAMMPS atomistic simulation
+**  program for structural optimisation with a
+**  reactive force-field
+**
+**  T.Trevethan 2016
+*****************************************************/
+
 #ifndef BOND_H
 #define BOND_H
 
@@ -12,7 +26,7 @@ class Bond
         virtual ~Bond();
         void coords(Atom& at1, Atom& at2);
         void index(long& i1, long& i2);
-        Atom midpoint();
+        Atom midpoint(double bounds[5]);
     private:
         Atom m_atom1; //coordinates of atom 1
         Atom m_atom2; //coordinates of atom 2

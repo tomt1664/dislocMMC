@@ -1,4 +1,18 @@
-//class for atomic configuration of the system
+/****************************************************
+**  dislocMMC
+**
+**  A Metropolis Monte Carlo algorithm to model the
+**  evolution of structure in defective sp2 bonded
+**  carbon systems
+**
+**  The code calls the LAMMPS atomistic simulation
+**  program for structural optimisation with a
+**  reactive force-field
+**
+**  T.Trevethan 2016
+*****************************************************/
+
+//class for the atomic configuration of the system and boundary conditions
 
 #ifndef CONFIG_H
 #define CONFIG_H
@@ -14,7 +28,7 @@ class Config
 {
     public:
         Config(std::string& infile); //construct config object with input file
-        Config(std::vector<Atom>& inconf); //constrct config object with atom vector
+        Config(std::vector<Atom>& inconf, double nbounds[5]); //constrct config object with atom vector
         virtual ~Config();
         int getbondlist(double cutoff); // get the bond list
         long getn2(); //find all bonds
@@ -29,7 +43,7 @@ class Config
         long analyse(double cutoff, std::vector<Bond>& bondl);
         long update(double cutoff, long ibnd);
 
-        long rotate(long ibnd); //rotate the bond pair of index ibnd (return success)
+        int rotate(long ibnd); //rotate the bond pair of index ibnd (return success)
         long getCoords(std::vector<Atom>& coords); //get the atomic coordinates
         long nat() { return m_nat; } //get the number of atoms in the configuration
         int ipm(int n); //modular function for pentagon
