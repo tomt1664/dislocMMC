@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1468512355 source:/home/feps/chstf/tt0014/c/dislocMMC/main.cpp
+1468339639 source:/home/feps/chstf/tt0014/c/dislocMMC/main.cpp
 	<iostream>
 	<fstream>
 	<cstdlib>
@@ -8,7 +8,6 @@
 	"config.h"
 	"atom.h"
 	"polygon.h"
-	"setup.h"
 
 1464015269 /home/feps/chstf/tt0014/c/dislocMMC/include/config.h
 	<vector>
@@ -24,7 +23,7 @@
 
 1468339588 /home/feps/chstf/tt0014/c/dislocMMC/include//atom.h
 
-1468515314 source:/home/feps/chstf/tt0014/c/dislocMMC/src/config.cpp
+1468339588 source:/home/feps/chstf/tt0014/c/dislocMMC/src/config.cpp
 	<iostream>
 	<fstream>
 	<string>
@@ -35,7 +34,7 @@
 	"config.h"
 	"polygon.h"
 
-1468516222 /home/feps/chstf/tt0014/c/dislocMMC/include//config.h
+1468339588 /home/feps/chstf/tt0014/c/dislocMMC/include//config.h
 	<vector>
 	<string>
 	"atom.h"
@@ -52,25 +51,14 @@
 1468339588 /home/feps/chstf/tt0014/c/dislocMMC/include//bond.h
 	"atom.h"
 
-1468509541 /home/feps/chstf/tt0014/c/dislocMMC/include//polygon.h
+1468339588 /home/feps/chstf/tt0014/c/dislocMMC/include//polygon.h
 	<vector>
 	<atom.h>
 
-1468339662 source:/home/feps/chstf/tt0014/c/dislocMMC/src/bond.cpp
+1468243985 source:/home/feps/chstf/tt0014/c/dislocMMC/src/bond.cpp
 	"atom.h"
 	"bond.h"
 
 1468339588 source:/home/feps/chstf/tt0014/c/dislocMMC/src/polygon.cpp
 	"polygon.h"
-
-1468509795 /home/feps/chstf/tt0014/c/dislocMMC/include//setup.h
-	<string>
-
-1468509884 source:/home/feps/chstf/tt0014/c/dislocMMC/src/setup.cpp
-	"setup.h"
-	<iostream>
-	<fstream>
-	<string>
-	<sstream>
-	<cstdlib>
 

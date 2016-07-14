@@ -16,6 +16,7 @@
 #define POLYGON_H
 
 #include <vector>
+
 #include <atom.h>
 
 //polygon class to store polygons (3,4,5 and 7 membered rings)

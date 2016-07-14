@@ -22,12 +22,13 @@
 #include "config.h"
 #include "polygon.h"
 
-// input constructor to read file
-Config::Config(const std::string& infile)
+// input constructor
+Config::Config(std::string& infile)
 {
     //open data input file for inital structure
     std::ifstream initstruct(infile.c_str());
-    if (!initstruct) {
+    if (!initstruct)
+    {
         std::cerr << "Error: input structure could not be opened" << std::endl;
         exit(1);
     }
@@ -49,6 +50,7 @@ Config::Config(const std::string& infile)
     ss >> bounds[0] >> bounds[1] >> bounds[2] >> bounds[3] >> bounds[4] >> bounds[5];
     ss.clear();
     ss.str(""); //clear stringsteam
+
 
     for(long iat = 0; iat < m_nat; iat++)
     {
@@ -376,6 +378,9 @@ long Config::getPents(std::vector<Polygon>& pents)
             }
             else if(m_n44[i] == m_n31[j] && m_n41[i] == m_n33[j])
             {
+                std::cout << "l2" << std::endl;
+
+
                 std::vector<long> indx;
                 std::vector<Atom> atoms;
                 indx.push_back(m_n41[i]);
@@ -562,7 +567,7 @@ long Config::getBonds(std::vector<Bond>& bonds)
 }
 
 //write the configuration to file (in enhanced XYZ format)
-void Config::write(const std::string& configfile)
+void Config::write(std::string& configfile)
 {
     //open data input file for inital structure
     std::ofstream writeconfig(configfile.c_str(),std::ios::app);
@@ -583,7 +588,7 @@ void Config::write(const std::string& configfile)
 }
 
 //write the polygons to file (in XYZ format)
-void Config::writePoly(const std::string& polyfile)
+void Config::writePoly(std::string& polyfile)
 {
     //open data input file for inital structure
     std::ofstream writepoly(polyfile.c_str(),std::ios::app);
@@ -619,7 +624,7 @@ void Config::writePoly(const std::string& polyfile)
 }
 
 //write the polygons to file (in XYZ format)
-void Config::writeBonds(const std::string& bondfile)
+void Config::writeBonds(std::string& bondfile)
 {
     //open data input file for inital structure
     std::ofstream writebond(bondfile.c_str(),std::ios::app);
@@ -668,7 +673,7 @@ int Config::ihm(int n)
 }
 
 //optimise the configuration by calling LAMMPS and return the final energy
-double Config::relax(const std::string& lmp_command)
+double Config::relax()
 {
     double en_init,en_pen,en_final; //potential energies during the optimisation
     //write the LAMMPS data file
@@ -704,7 +709,7 @@ double Config::relax(const std::string& lmp_command)
     lammps.close();
 
     //call and run LAMMPS
-    system(lmp_command.c_str());
+    system("lmp_serial < in.rot > lmp.out");
 
     //open output file and retrieve energy value
     std::ifstream logfile("log.lammps");
@@ -805,6 +810,8 @@ long Config::update(double cutoff, long ibnd)
     Atom at1,at2;
     Atom midp;
     midp = m_bonds[ibnd].midpoint(bounds);
+
+    std::cout << midp.getx() << " " << midp.gety() << std::endl;
 
     //remove all bonds within 15 A of selected
     std::vector<Bond> newbondl;

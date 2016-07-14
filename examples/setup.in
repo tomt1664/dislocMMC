@@ -1,0 +1,2 @@
+lmp_serial < in.rot > lmp.out
+1 1000 1 1.8 300.0 0.001

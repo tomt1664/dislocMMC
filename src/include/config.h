@@ -27,7 +27,7 @@
 class Config
 {
     public:
-        Config(const std::string& infile); //construct config object with input file
+        Config(std::string& infile); //construct config object with input file
         Config(std::vector<Atom>& inconf, double nbounds[5]); //constrct config object with atom vector
         virtual ~Config();
         int getbondlist(double cutoff); // get the bond list
@@ -49,11 +49,11 @@ class Config
         int ipm(int n); //modular function for pentagon
         int ihm(int n); //modular function for heptagon
 
-        double relax(const std::string& lmp_command);  //optimise the configuration by calling LAMMPS and return the final energy
+        double relax();  //optimise the configuration by calling LAMMPS and return the final energy
 
-        void write(const std::string& configfile); //write the system coordintes to configfile in XYZ format
-        void writePoly(const std::string& polyfile); //write pentagon and hepatgon coordinates to file
-        void writeBonds(const std::string& bondfile); //write the active bond coordinates to file
+        void write(std::string& configfile); //write the system coordintes to configfile in XYZ format
+        void writePoly(std::string& polyfile); //write pentagon and hepatgon coordinates to file
+        void writeBonds(std::string& bondfile); //write the active bond coordinates to file
 
     private:
         long m_nat; //number of atoms
