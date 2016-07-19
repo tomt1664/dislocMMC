@@ -641,6 +641,15 @@ void Config::writeBonds(const std::string& bondfile)
     writebond.close();
 }
 
+//write the total energy to file
+void Config::writeEn(const std::string& enfile)
+{
+    //open file for writing energy
+    std::ofstream writeen(enfile.c_str(),std::ios::app);
+    writeen << m_en << std::endl;
+    writeen.close();
+}
+
 //modular function for pentagons
 int Config::ipm(int n)
 {
@@ -798,7 +807,9 @@ long Config::analyse(double cutoff,std::vector<Bond>& bonds)
 }
 
 //function to update the bond rotation list after a structural change
-//only changes within 15 A of the changed bond are analysed
+//only changes within 10 A of the changed bond are analysed
+//
+//the pentagon and heptagon lists are also updated for printing
 long Config::update(double cutoff, long ibnd)
 {
     //get the rotated bond indices and centrepoint
@@ -806,8 +817,12 @@ long Config::update(double cutoff, long ibnd)
     Atom midp;
     midp = m_bonds[ibnd].midpoint(bounds);
 
+    long it1,it2;
+
     //remove all bonds within 15 A of selected
     std::vector<Bond> newbondl;
+//    std::vector<Polygon> newpentlst;
+//    std::vector<Polygon> newheptlst;
     int nbl = 0;
     for(unsigned i = 0; i < m_bonds.size(); i++)
     {
@@ -815,20 +830,22 @@ long Config::update(double cutoff, long ibnd)
         double dist1 = midp.dist(at1,bounds);
         double dist2 = midp.dist(at2,bounds);
 
-        if(dist1 > 15.0 && dist2 > 15.0)
+        if(dist1 > 10.0 && dist2 > 10.0)
         {
             newbondl.push_back(m_bonds[i]);
             nbl++;
         }
     }
 
-    //create configuration of atoms within 20 A of selected
+    //create configuration of atoms within 15 A of selected
     std::vector<Atom> coords;
-    for(int i=0; i < m_nat; i++)
+    std::vector<long> indxt; // keep a record of atom indicies
+    for(long i=0; i < m_nat; i++)
     {
-        if(m_coords[i].dist(midp,bounds) < 20.0)
+        if(m_coords[i].dist(midp,bounds) < 15.0)
         {
             coords.push_back(m_coords[i]);
+            indxt.push_back(i);
         }
     }
 
@@ -844,8 +861,12 @@ long Config::update(double cutoff, long ibnd)
         fragbond[i].coords(att1,att2);
         double dist1 = midp.dist(att1,bounds);
         double dist2 = midp.dist(att2,bounds);
-        if(dist1 < 15.0 && dist2 < 15.0)
+        if(dist1 < 10.0 && dist2 < 10.0)
         {
+            fragbond[i].index(it1,it2);
+            it1 = indxt[it1];
+            it2 = indxt[it2];
+            fragbond[i].setindex(it1,it2);
             newbondl.push_back(fragbond[i]);
         }
     }
@@ -870,10 +891,30 @@ int Config::rotate(long ibnd)
     midp = m_bonds[ibnd].midpoint(bounds);
     m_bonds[ibnd].index(ib1,ib2);
 
+    //implement periodic boundary conditions
+    double xadd = 0.0;
+    double yadd = 0.0;
+    double zadd = 0.0;
+
+    //get cell dimensions
+    double perx = bounds[1] - bounds[0];
+    double pery = bounds[3] - bounds[2];
+    double perz = bounds[5] - bounds[4];
+
+    //check for boundary crossing
+    if(m_coords[ib1].getx() < (bounds[0]+0.25*perx) && m_coords[ib2].getx() > (bounds[0]+0.75*perx)) xadd = -perx;
+    if(m_coords[ib1].getx() > (bounds[0]+0.75*perx) && m_coords[ib2].getx() < (bounds[0]+0.25*perx)) xadd = perx;
+
+    if(m_coords[ib1].gety() < (bounds[2]+0.25*pery) && m_coords[ib2].gety() > (bounds[2]+0.75*pery)) yadd = -pery;
+    if(m_coords[ib1].gety() > (bounds[2]+0.75*pery) && m_coords[ib2].gety() < (bounds[2]+0.25*pery)) yadd = pery;
+
+    if(m_coords[ib1].getz() < (bounds[4]+0.25*perz) && m_coords[ib2].getz() > (bounds[4]+0.75*perz)) zadd = -perz;
+    if(m_coords[ib1].getz() > (bounds[4]+0.75*perz) && m_coords[ib2].getz() < (bounds[4]+0.25*perz)) zadd = perz;
+
     //get coordinates and centre on the midpoint
-    double x1c = m_coords[ib1].getx() - midp.getx();
-    double y1c = m_coords[ib1].gety() - midp.gety();
-    double z1c = m_coords[ib1].getz() - midp.getz();
+    double x1c = m_coords[ib1].getx() - midp.getx() - xadd;
+    double y1c = m_coords[ib1].gety() - midp.gety() - yadd;
+    double z1c = m_coords[ib1].getz() - midp.getz() - zadd;
 
     double x2c = m_coords[ib2].getx() - midp.getx();
     double y2c = m_coords[ib2].gety() - midp.gety();

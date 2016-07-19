@@ -54,6 +54,7 @@ class Config
         void write(const std::string& configfile); //write the system coordintes to configfile in XYZ format
         void writePoly(const std::string& polyfile); //write pentagon and hepatgon coordinates to file
         void writeBonds(const std::string& bondfile); //write the active bond coordinates to file
+        void writeEn(const std::string& enfile); //write the configuration system energy to file
 
     private:
         long m_nat; //number of atoms
@@ -85,7 +86,7 @@ class Config
         std::vector<Polygon> m_hept;
         std::vector<Bond> m_bonds; //list of all the potential bond rotation pairs (5-7 intersects)
         double m_en; //configuration energy
-        double bounds [5]; //periodic boundary conditions
+        double bounds [6]; //periodic boundary conditions
 };
 
 #endif // CONFIG_H

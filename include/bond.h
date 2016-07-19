@@ -26,6 +26,7 @@ class Bond
         virtual ~Bond();
         void coords(Atom& at1, Atom& at2);
         void index(long& i1, long& i2);
+        void setindex(long i1, long i2);
         Atom midpoint(double bounds[5]);
     private:
         Atom m_atom1; //coordinates of atom 1

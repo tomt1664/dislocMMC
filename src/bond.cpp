@@ -38,6 +38,13 @@ void Bond::index(long& i1, long& i2)
     i2 = m_i2;
 }
 
+//set indicies
+void Bond::setindex(long i1, long i2)
+{
+    m_i1 = i1;
+    m_i2 = i2;
+}
+
 //return an atom object containing the midpoint of the bond
 Atom Bond::midpoint(double bounds[5])
 {

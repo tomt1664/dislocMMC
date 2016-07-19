@@ -12,6 +12,7 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
+					<Add option="-std=c++0x" />
 					<Add option="-g" />
 					<Add directory="/home/feps/chstf/tt0014/c/dislocMMC/src/" />
 					<Add directory="/home/feps/chstf/tt0014/c/dislocMMC/include/" />
@@ -37,14 +38,14 @@
 		<Unit filename="include/atom.h" />
 		<Unit filename="include/bond.h" />
 		<Unit filename="include/config.h" />
-		<Unit filename="include/optim.h" />
 		<Unit filename="include/polygon.h" />
+		<Unit filename="include/setup.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="src/atom.cpp" />
 		<Unit filename="src/bond.cpp" />
 		<Unit filename="src/config.cpp" />
-		<Unit filename="src/optim.cpp" />
 		<Unit filename="src/polygon.cpp" />
+		<Unit filename="src/setup.cpp" />
 		<Extensions>
 			<code_completion />
 			<debugger />

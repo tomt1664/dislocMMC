@@ -29,6 +29,7 @@ class Setup //class to read in and store the simultion set-up options
         int pstep() { return m_pstep; }
         long maxs() { return m_maxs; }
         double etol() { return m_etol; }
+        int seed() { return m_seed; }
         std::string lmp() { return m_lmpcommand; }
 
     private:
@@ -38,6 +39,7 @@ class Setup //class to read in and store the simultion set-up options
         int m_pstep; // printing interval for output
         long m_maxs; // maximum number of simulation steps
         double m_etol; // tolerance for exiting energy minimisation
+        int m_seed; // seed for random number generator
         std::string m_lmpcommand; //command for LAMMPS call
 };
 
