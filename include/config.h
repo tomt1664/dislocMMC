@@ -39,11 +39,14 @@ class Config
         long getPents(std::vector<Polygon>& pents); //get a list of all the pentagons in the system (return number)
         long getHepts(std::vector<Polygon>& hepts); //get a list of all the heptagons in the system (return number)
         long getBonds(std::vector<Bond>& bonds); //get a list of all the bond rotation pairs (return number)
+        long getCBonds(std::vector<Bond>& bonds); //get a list of all the climb pairs (return number)
 
-        long analyse(double cutoff, std::vector<Bond>& bondl);
+        long analyse(double cutoff, std::vector<Bond>& bondl, std::vector<Bond>& bondc);
         long update(double cutoff, long ibnd);
 
         int rotate(long ibnd); //rotate the bond pair of index ibnd (return success)
+        int dclimb(long ibnd); //perform dimer climb
+
         long getCoords(std::vector<Atom>& coords); //get the atomic coordinates
         long nat() { return m_nat; } //get the number of atoms in the configuration
         int ipm(int n); //modular function for pentagon
@@ -85,6 +88,7 @@ class Config
         std::vector<Polygon> m_pent; //5 fold and 7 fold rings
         std::vector<Polygon> m_hept;
         std::vector<Bond> m_bonds; //list of all the potential bond rotation pairs (5-7 intersects)
+        std::vector<Bond> m_cbonds; //list of all the potential climb pairs (5-7 intersects)
         double m_en; //configuration energy
         double bounds [6]; //periodic boundary conditions
 };

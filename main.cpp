@@ -42,6 +42,7 @@ int main()
     // polygon and active bond storage vectors
     std::vector<Polygon> polys;
     std::vector<Bond> bonds;
+    std::vector<Bond> bondc;
 
     // get the simulation set-up and options and LAMMPS command from the input file
     Setup setup(inoptions);
@@ -54,7 +55,7 @@ int main()
 
     // perform initial structure analysis
     std::cout << "Initial structure analysis ..." << std::endl;
-    long numbnd = config.analyse(setup.coff(),bonds);
+    long numbnd = config.analyse(setup.coff(),bonds,bondc);
     std::cout << "Found " << numbnd << " active bonds" << std::endl;
 
     //write initial configuration and features (rotatable bonds and polygons) to output
@@ -163,7 +164,14 @@ int main()
             }
         }
 
-    } else {
+    } else if(setup.type() == 3)
+    //do Metropolis-Hastings Monte Carlo
+    {
+        config.dclimb(1);
+        config.relax(setup.lmp());
+        config.write(outfile);
+    }
+    else {
         std::cout << "Invalid type option" << std::endl;
         exit(1);
     }

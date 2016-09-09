@@ -40,6 +40,7 @@ class Setup //class to read in and store the simultion set-up options
         long m_maxs; // maximum number of simulation steps
         double m_etol; // tolerance for exiting energy minimisation
         int m_seed; // seed for random number generator
+        double m_climb; // climb rate (per step)
         std::string m_lmpcommand; //command for LAMMPS call
 };
 

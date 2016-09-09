@@ -43,7 +43,11 @@ Setup::Setup(std::string& setupfile)
     std::getline(insetup,data);
     m_lmpcommand = data;
     std::getline(insetup,data);
-    ss >> m_type >> m_maxs >> m_pstep >> m_cutoff >> m_temp >> m_etol;
+    ss << data;
+    ss >> m_type >> m_maxs >> m_pstep >> m_cutoff >> m_temp >> m_etol >> m_seed;
+    std::getline(insetup,data);
+    ss >> m_climb;
+
 
 }
 

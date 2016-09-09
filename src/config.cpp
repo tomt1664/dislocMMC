@@ -88,6 +88,11 @@ Config::~Config() //default destructor
 //determine the bond list for the configuration: return 1 if any overcoordination
 int Config::getbondlist(double cutoff) // get the bond list
 {
+    m_b1.clear();
+    m_b2.clear();
+    m_b3.clear();
+    m_b4.clear();
+    m_nb.clear();
     int overc = 0;
     //double loop over all atoms in the configuration
     for(int i=0; i < m_nat; i++)
@@ -126,6 +131,8 @@ int Config::getbondlist(double cutoff) // get the bond list
 //get the list of all bonds and return the number of bonds
 long Config::getn2()
 {
+    m_n21.clear();
+    m_n22.clear();
     long numbnd = 0;
     for(int i=0; i < m_nat; i++)
     {
@@ -160,6 +167,9 @@ long Config::getn2()
 //get the list of all angles (n3) and return the number
 long Config::getn3()
 {
+    m_n31.clear();
+    m_n32.clear();
+    m_n33.clear();
     long numn3 = 0;
     long numn2 = m_n21.size();
     for(int i=0; i < numn2; i++)
@@ -203,6 +213,10 @@ long Config::getn3()
 //get the list of all torsions (n4) and return the number
 long Config::getn4()
 {
+    m_n41.clear();
+    m_n42.clear();
+    m_n43.clear();
+    m_n44.clear();
     long numn4 = 0;
     long numn3 = m_n31.size();
     for(int i=0; i < numn3; i++)
@@ -281,6 +295,12 @@ long Config::getn4()
 //get the list of all n5 and return the number
 long Config::getn5()
 {
+    m_n51.clear();
+    m_n52.clear();
+    m_n53.clear();
+    m_n54.clear();
+    m_n55.clear();
+
     long numn5 = 0;
     long numn4 = m_n41.size();
     for(int i=0; i < numn4; i++)
@@ -331,6 +351,7 @@ long Config::getn5()
 //get a list of all the pentagons in the system
 long Config::getPents(std::vector<Polygon>& pents)
 {
+    m_pent.clear();
     long np = 0;
     long numn4 = m_n41.size();
     long numn3 = m_n31.size();
@@ -416,6 +437,7 @@ long Config::getPents(std::vector<Polygon>& pents)
 //get a list of all the heptagons in the system
 long Config::getHepts(std::vector<Polygon>& hepts)
 {
+    m_hept.clear();
     long nh = 0;
     long numn5 = m_n51.size();
     long numn4 = m_n41.size();
@@ -512,6 +534,7 @@ long Config::getHepts(std::vector<Polygon>& hepts)
 //get a list of all bonds in a heptagon where it intercepts with a pentagon
 long Config::getBonds(std::vector<Bond>& bonds)
 {
+    m_bonds.clear();
     long nb = 0;
     long nump = m_pent.size();
     long numh = m_hept.size();
@@ -560,6 +583,60 @@ long Config::getBonds(std::vector<Bond>& bonds)
     }
     return nb;
 }
+
+//get a list of all bonds in a pentagon where it intercepts with a heptagon
+long Config::getCBonds(std::vector<Bond>& bonds)
+{
+    m_cbonds.clear();
+    long nb = 0;
+    long nump = m_pent.size();
+    long numh = m_hept.size();
+    for(int i=0; i < nump; i++)
+    {
+        std::vector<long> pindx;
+        m_pent[i].index(pindx);
+        for(int j = 0; j < numh; j++)
+        {
+            std::vector<long> hindx;
+            m_hept[j].index(hindx);
+                for(int n=0; n < 5; n++)
+                {
+                    for(int m=0; m < 7; m++)
+                    {
+                        if(pindx[n] == hindx[m])
+                        {
+                            long indx1 = pindx[n];
+                            long indx2;
+//                            std::cout << indx1 << std::endl;
+                            if(hindx[ihm(m+1)] == pindx[ipm(n+1)])
+                            {
+                                indx2 = pindx[ipm(n-1)];
+                            } else if(hindx[ihm(m-1)] == pindx[ipm(n-1)])
+                            {
+                                indx2 = pindx[ipm(n+1)];
+                            } else if(hindx[ihm(m+1)] == pindx[ipm(n-1)])
+                            {
+                                indx2 = pindx[ipm(n+1)];
+                            } else if(hindx[ihm(m-1)] == pindx[ipm(n+1)])
+                            {
+                                indx2 = pindx[ipm(n-1)];
+                            } else
+                            {
+                                std::cout << "Error in getBonds" << std::endl;
+                                exit(1);
+                            }
+                            Bond bond(m_coords[indx1],m_coords[indx2],indx1,indx2);
+                            m_cbonds.push_back(bond);
+                            bonds.push_back(bond);
+                            nb++;
+                        }
+                    }
+                }
+        }
+    }
+    return nb;
+}
+
 
 //write the configuration to file (in enhanced XYZ format)
 void Config::write(const std::string& configfile)
@@ -784,7 +861,7 @@ double Config::relax(const std::string& lmp_command)
 }
 
 //function to call all the methods required to determine the rotation bond list
-long Config::analyse(double cutoff,std::vector<Bond>& bonds)
+long Config::analyse(double cutoff,std::vector<Bond>& bonds, std::vector<Bond>& bondc)
 {
     std::vector<Polygon> polys;
     int berror = getbondlist(cutoff);
@@ -802,6 +879,7 @@ long Config::analyse(double cutoff,std::vector<Bond>& bonds)
     polys.clear();
     nbnd = getHepts(polys);
     nbnd = getBonds(bonds);
+    nbnd = getCBonds(bondc);
 
     return nbnd;
 }
@@ -852,7 +930,8 @@ long Config::update(double cutoff, long ibnd)
    //create configuration
    Config fragment(coords, bounds);
    std::vector<Bond> fragbond;
-   long nbnd = fragment.analyse(cutoff,fragbond);
+   std::vector<Bond> fragcbond;
+   long nbnd = fragment.analyse(cutoff,fragbond,fragcbond);
 
    //add new bonds within 15 A to the newbond vector
     for(int i=0; i < nbnd; i++)
@@ -935,3 +1014,64 @@ int Config::rotate(long ibnd)
 
     return 1;
 }
+
+//perform climb by 1 dimer on the given bond index
+// this deletes the pair of atoms and closes the gap
+int Config::dclimb(long ibnd)
+{
+    //get the index
+    long ib1,ib2;
+    m_cbonds[ibnd].index(ib1,ib2);
+
+    //get coordinates
+    Atom dc1 = m_coords[ib1];
+    Atom dc2 = m_coords[ib2];
+
+    //remove the atoms
+    m_coords.erase(m_coords.begin() + ib1);
+    m_coords.erase(m_coords.begin() + ib2);
+    m_nat -= 2;
+    //close the gap
+    //vector
+
+    long i1_in1;
+    long i1_in2;
+    if(m_b1[ib1] == ib2) {
+        i1_in1 = m_b2[ib1];
+        i1_in2 = m_b3[ib1];
+    } else if(m_b2[ib1] == ib2) {
+        i1_in1 = m_b1[ib1];
+        i1_in2 = m_b3[ib1];
+    } else if(m_b3[ib1] == ib2) {
+        i1_in1 = m_b1[ib1];
+        i1_in2 = m_b2[ib1];
+    } else {
+        std::cout << "Error in dclimb close 1" << std::endl;
+        exit(1);
+    }
+
+    long i2_in1;
+    long i2_in2;
+    if(m_b1[ib2] == ib2) {
+        i1_in1 = m_b2[ib2];
+        i1_in2 = m_b3[ib2];
+    } else if(m_b2[ib2] == ib2) {
+        i1_in1 = m_b1[ib2];
+        i1_in2 = m_b3[ib2];
+    } else if(m_b3[ib2] == ib2) {
+        i1_in1 = m_b1[ib2];
+        i1_in2 = m_b2[ib2];
+    } else {
+        std::cout << "Error in dclimb close 2" << std::endl;
+        exit(1);
+    }
+
+    double vmove1_n1_x = m_coords[ib1].getx() - m_coords[i1_in1].getx();
+    double vmove1_n1_y = m_coords[ib1].gety() - m_coords[i1_in1].gety();
+    double vmove1_n1_z = m_coords[ib1].getz() - m_coords[i1_in1].getz();
+
+    double vmove1_n2_x = m_coords[ib1].getx() - m_coords[i1_in2].getx();
+    double vmove1_n2_y = m_coords[ib1].gety() - m_coords[i1_in2].gety();
+    double vmove1_n2_z = m_coords[ib1].getz() - m_coords[i1_in2].getz();
+}
+
