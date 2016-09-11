@@ -37,7 +37,8 @@ class Config
         long getn5(); // find all 5 sequentially bonded atoms
 
         long getPents(std::vector<Polygon>& pents); //get a list of all the pentagons in the system (return number)
-        long getHepts(std::vector<Polygon>& hepts); //get a list of all the heptagons in the system (return number)
+        long getHepts(std::vector<Polygon>& hepts); // get a list of all the hexagons in the system (return number)
+        long getOcts(std::vector<Polygon>& hepts); // get a list of all the hexagons in the system (return number)
         long getBonds(std::vector<Bond>& bonds); //get a list of all the bond rotation pairs (return number)
         long getCBonds(std::vector<Bond>& bonds); //get a list of all the climb pairs (return number)
 
@@ -45,12 +46,16 @@ class Config
         long update(double cutoff, long ibnd);
 
         int rotate(long ibnd); //rotate the bond pair of index ibnd (return success)
+        int shuffle(long ioct,int idir); //shuffle the odd core in the direction idir
         int dclimb(long ibnd); //perform dimer climb
+        int sclimb(long ibnd); //perform single climb from 5-7
+        int shclimb(long ioct); //perform single climb from 6-8
 
         long getCoords(std::vector<Atom>& coords); //get the atomic coordinates
         long nat() { return m_nat; } //get the number of atoms in the configuration
         int ipm(int n); //modular function for pentagon
         int ihm(int n); //modular function for heptagon
+        int iom(int n); //modular function for octagon
 
         double relax(const std::string& lmp_command);  //optimise the configuration by calling LAMMPS and return the final energy
 
@@ -85,8 +90,9 @@ class Config
         std::vector<long> m_n54;
         std::vector<long> m_n55;
 
-        std::vector<Polygon> m_pent; //5 fold and 7 fold rings
-        std::vector<Polygon> m_hept;
+        std::vector<Polygon> m_pent; //5 fold rings
+        std::vector<Polygon> m_hept; //7 fold rings
+        std::vector<Polygon> m_oct; //8 fold rings
         std::vector<Bond> m_bonds; //list of all the potential bond rotation pairs (5-7 intersects)
         std::vector<Bond> m_cbonds; //list of all the potential climb pairs (5-7 intersects)
         double m_en; //configuration energy

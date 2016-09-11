@@ -531,6 +531,109 @@ long Config::getHepts(std::vector<Polygon>& hepts)
     return nh;
 }
 
+//get a list of all the heptagons in the system
+long Config::getOcts(std::vector<Polygon>& octs)
+{
+    m_oct.clear();
+    long no = 0;
+    long numn5 = m_n51.size();
+
+    for(int i=0; i < numn5; i++)
+    {
+        for(int j = i+1; j < numn5; j++)
+        {
+            if(m_n51[i] == m_n51[j] && m_n55[i] == m_n55[j] && m_n52[i] != m_n52[j] && m_n54[i] != m_n54[j] && m_n53[i] != m_n53[j])
+            {
+                std::vector<long> indx;
+                std::vector<Atom> atoms;
+                atoms.clear();
+                indx.clear();
+                indx.push_back(m_n51[i]);
+                indx.push_back(m_n52[i]);
+                indx.push_back(m_n53[i]);
+                indx.push_back(m_n54[i]);
+                indx.push_back(m_n55[i]);
+                indx.push_back(m_n54[j]);
+                indx.push_back(m_n53[j]);
+                indx.push_back(m_n52[j]);
+
+                std::cout << "r " << std::endl;
+                for(int n=0; n < 8; n++)
+                {
+                    atoms.push_back(m_coords[indx[n]]);
+                    std::cout << "i1 " << indx[n]+1 << std::endl;
+                }
+
+                Polygon toctt(atoms,indx);
+
+                long osum = toctt.sum();
+                long osize = m_oct.size();
+                int oadd = 1;
+                for(long os=0; os < osize; os++)
+                {
+                    long osum2 = m_oct[os].sum();
+                    if(osum == osum2)
+                    {
+                        oadd = 0;
+                    }
+
+                }
+                if(oadd)
+                {
+                    m_oct.push_back(toctt);
+                    octs.push_back(toctt);
+                    no++;
+                }
+            }
+
+            else if(m_n55[i] == m_n51[j] && m_n51[i] == m_n55[j] && m_n52[i] != m_n54[j] && m_n54[i] != m_n52[j] && m_n53[i] != m_n53[j])
+            {
+                std::vector<long> indx;
+                std::vector<Atom> atoms;
+                atoms.clear();
+                indx.clear();
+                indx.push_back(m_n51[i]);
+                indx.push_back(m_n52[i]);
+                indx.push_back(m_n53[i]);
+                indx.push_back(m_n54[i]);
+                indx.push_back(m_n55[i]);
+                indx.push_back(m_n52[j]);
+                indx.push_back(m_n53[j]);
+                indx.push_back(m_n54[j]);
+
+                std::cout << "r " << std::endl;
+                for(int n=0; n < 8; n++)
+                {
+                    atoms.push_back(m_coords[indx[n]]);
+                                        std::cout << "i2 " << indx[n]+1 << std::endl;
+                }
+
+                Polygon toctt(atoms,indx);
+
+                long osum = toctt.sum();
+                long osize = m_oct.size();
+                int oadd = 1;
+                for(long os=0; os < osize; os++)
+                {
+                    long osum2 = m_oct[os].sum();
+                    if(osum == osum2)
+                    {
+                        oadd = 0;
+                    }
+
+                }
+                if(oadd)
+                {
+                    m_oct.push_back(toctt);
+                    octs.push_back(toctt);
+                    no++;
+                }
+            }
+        }
+    }
+    return no;
+}
+
 //get a list of all bonds in a heptagon where it intercepts with a pentagon
 long Config::getBonds(std::vector<Bond>& bonds)
 {
@@ -730,25 +833,32 @@ void Config::writeEn(const std::string& enfile)
 //modular function for pentagons
 int Config::ipm(int n)
 {
-    if(n > 4)
-    {
+    if(n > 4) {
         n -= 5;
-    } else if(n < 0)
-    {
+    } else if(n < 0) {
         n += 5;
     }
     return n;
 }
 
-//modular function for hexagons
+//modular function for heptagons
 int Config::ihm(int n)
 {
-    if(n > 6)
-    {
+    if(n > 6) {
         n -= 7;
-    } else if(n < 0)
-    {
+    } else if(n < 0) {
         n += 7;
+    }
+    return n;
+}
+
+//modular function for octagons
+int Config::iom(int n)
+{
+    if(n > 7) {
+        n -= 8;
+    } else if(n < 0) {
+        n += 8;
     }
     return n;
 }
@@ -1027,40 +1137,37 @@ int Config::dclimb(long ibnd)
     Atom dc1 = m_coords[ib1];
     Atom dc2 = m_coords[ib2];
 
-    //remove the atoms
-    m_coords.erase(m_coords.begin() + ib1);
-    m_coords.erase(m_coords.begin() + ib2);
-    m_nat -= 2;
     //close the gap
     //vector
 
     long i1_in1;
     long i1_in2;
-    if(m_b1[ib1] == ib2) {
-        i1_in1 = m_b2[ib1];
-        i1_in2 = m_b3[ib1];
-    } else if(m_b2[ib1] == ib2) {
-        i1_in1 = m_b1[ib1];
-        i1_in2 = m_b3[ib1];
-    } else if(m_b3[ib1] == ib2) {
-        i1_in1 = m_b1[ib1];
-        i1_in2 = m_b2[ib1];
+    if(m_b1[ib1]-1 == ib2) {
+        i1_in1 = m_b2[ib1]-1;
+        i1_in2 = m_b3[ib1]-1;
+    } else if(m_b2[ib1]-1 == ib2) {
+        i1_in1 = m_b1[ib1]-1;
+        i1_in2 = m_b3[ib1]-1;
+    } else if(m_b3[ib1]-1 == ib2) {
+        i1_in1 = m_b1[ib1]-1;
+        i1_in2 = m_b2[ib1]-1;
     } else {
+        std::cout << m_b1[ib1] << " " << m_b2[ib1] << " " << m_b3[ib1] << " " << ib1 << " " << ib2 << std::endl;
         std::cout << "Error in dclimb close 1" << std::endl;
         exit(1);
     }
 
     long i2_in1;
     long i2_in2;
-    if(m_b1[ib2] == ib2) {
-        i1_in1 = m_b2[ib2];
-        i1_in2 = m_b3[ib2];
-    } else if(m_b2[ib2] == ib2) {
-        i1_in1 = m_b1[ib2];
-        i1_in2 = m_b3[ib2];
-    } else if(m_b3[ib2] == ib2) {
-        i1_in1 = m_b1[ib2];
-        i1_in2 = m_b2[ib2];
+    if(m_b1[ib2]-1 == ib1) {
+        i2_in1 = m_b2[ib2]-1;
+        i2_in2 = m_b3[ib2]-1;
+    } else if(m_b2[ib2]-1 == ib1) {
+        i2_in1 = m_b1[ib2]-1;
+        i2_in2 = m_b3[ib2]-1;
+    } else if(m_b3[ib2]-1 == ib1) {
+        i2_in1 = m_b1[ib2]-1;
+        i2_in2 = m_b2[ib2]-1;
     } else {
         std::cout << "Error in dclimb close 2" << std::endl;
         exit(1);
@@ -1073,5 +1180,234 @@ int Config::dclimb(long ibnd)
     double vmove1_n2_x = m_coords[ib1].getx() - m_coords[i1_in2].getx();
     double vmove1_n2_y = m_coords[ib1].gety() - m_coords[i1_in2].gety();
     double vmove1_n2_z = m_coords[ib1].getz() - m_coords[i1_in2].getz();
+
+    double vmove2_n1_x = m_coords[ib2].getx() - m_coords[i2_in1].getx();
+    double vmove2_n1_y = m_coords[ib2].gety() - m_coords[i2_in1].gety();
+    double vmove2_n1_z = m_coords[ib2].getz() - m_coords[i2_in1].getz();
+
+    double vmove2_n2_x = m_coords[ib2].getx() - m_coords[i2_in2].getx();
+    double vmove2_n2_y = m_coords[ib2].gety() - m_coords[i2_in2].gety();
+    double vmove2_n2_z = m_coords[ib2].getz() - m_coords[i2_in2].getz();
+
+    m_coords[i1_in1].setPos(m_coords[i1_in1].getx() + vmove1_n1_x*0.3,
+                            m_coords[i1_in1].gety() + vmove1_n1_y*0.3,
+                            m_coords[i1_in1].getz() + vmove1_n1_z*0.3);
+
+    m_coords[i1_in2].setPos(m_coords[i1_in2].getx() + vmove1_n2_x*0.3,
+                            m_coords[i1_in2].gety() + vmove1_n2_y*0.3,
+                            m_coords[i1_in2].getz() + vmove1_n2_z*0.3);
+
+    m_coords[i2_in1].setPos(m_coords[i2_in1].getx() + vmove2_n1_x*0.25,
+                            m_coords[i2_in1].gety() + vmove2_n1_y*0.25,
+                            m_coords[i2_in1].getz() + vmove2_n1_z*0.25);
+
+    m_coords[i2_in2].setPos(m_coords[i2_in2].getx() + vmove2_n2_x*0.25,
+                            m_coords[i2_in2].gety() + vmove2_n2_y*0.25,
+                            m_coords[i2_in2].getz() + vmove2_n2_z*0.25);
+
+    //remove the atoms
+    if(ib1 > ib2) {
+        m_coords.erase(m_coords.begin() + ib1);
+        m_coords.erase(m_coords.begin() + ib2);
+    } else {
+        m_coords.erase(m_coords.begin() + ib2);
+        m_coords.erase(m_coords.begin() + ib1);
+    }
+
+    m_nat -= 2;
+
+    return 1;
 }
 
+//perform climb by 1 vacancy on the given bond index
+// this deletes the pair of atoms and closes the gap
+int Config::sclimb(long ibnd)
+{
+    //get the index
+    long ib1,ib2;
+    m_cbonds[ibnd].index(ib1,ib2);
+
+    //close the gap
+    //vector
+
+    long i1_in1;
+    long i1_in2;
+    if(m_b1[ib1]-1 == ib2) {
+        i1_in1 = m_b2[ib1]-1;
+        i1_in2 = m_b3[ib1]-1;
+    } else if(m_b2[ib1]-1 == ib2) {
+        i1_in1 = m_b1[ib1]-1;
+        i1_in2 = m_b3[ib1]-1;
+    } else if(m_b3[ib1]-1 == ib2) {
+        i1_in1 = m_b1[ib1]-1;
+        i1_in2 = m_b2[ib1]-1;
+    } else {
+        std::cout << m_b1[ib1] << " " << m_b2[ib1] << " " << m_b3[ib1] << " " << ib1 << " " << ib2 << std::endl;
+        std::cout << "Error in cclimb close 1" << std::endl;
+        exit(1);
+    }
+
+    double vmove1_n1_x = m_coords[ib1].getx() - m_coords[i1_in1].getx();
+    double vmove1_n1_y = m_coords[ib1].gety() - m_coords[i1_in1].gety();
+    double vmove1_n1_z = m_coords[ib1].getz() - m_coords[i1_in1].getz();
+
+    double vmove1_n2_x = m_coords[ib1].getx() - m_coords[i1_in2].getx();
+    double vmove1_n2_y = m_coords[ib1].gety() - m_coords[i1_in2].gety();
+    double vmove1_n2_z = m_coords[ib1].getz() - m_coords[i1_in2].getz();
+
+    double vmove1_n3_x = m_coords[ib1].getx() - m_coords[ib2].getx();
+    double vmove1_n3_y = m_coords[ib1].gety() - m_coords[ib2].gety();
+    double vmove1_n3_z = m_coords[ib1].getz() - m_coords[ib2].getz();
+
+    m_coords[i1_in1].setPos(m_coords[i1_in1].getx() + vmove1_n1_x*0.30,
+                            m_coords[i1_in1].gety() + vmove1_n1_y*0.30,
+                            m_coords[i1_in1].getz() + vmove1_n1_z*0.30);
+
+    m_coords[i1_in2].setPos(m_coords[i1_in2].getx() + vmove1_n2_x*0.30,
+                            m_coords[i1_in2].gety() + vmove1_n2_y*0.30,
+                            m_coords[i1_in2].getz() + vmove1_n2_z*0.30);
+
+    m_coords[ib2].setPos(m_coords[ib2].getx() - vmove1_n3_x*0.2,
+                            m_coords[ib2].gety() - vmove1_n3_y*0.2,
+                            m_coords[ib2].getz() - vmove1_n3_z*0.2);
+
+    m_coords.erase(m_coords.begin() + ib1);
+    m_nat -= 1;
+
+    return 1;
+}
+
+//perform climb by 1 vacancy on the given bond index
+// this deletes the pair of atoms and closes the gap
+int Config::shclimb(long ioct)
+{
+    //get the index
+    std::vector<long> indx;
+    m_oct[ioct].index(indx);
+
+    //find the undercoordinated atom
+    int uci, nnc = 0;
+    for(int j=0;j<8;j++) {
+        if(m_nb[indx[j]] == 2) {
+            uci = j;
+            nnc++;
+        }
+    }
+    if(nnc != 1) {
+        std::cout << "Error: malformed 8-fold ring" << std::endl;
+        exit(1);
+    }
+
+    //close the gap
+    //vector
+
+    double vmove1_n1_x = m_coords[indx[uci]].getx() - m_coords[indx[iom(uci+1)]].getx();
+    double vmove1_n1_y = m_coords[indx[uci]].gety() - m_coords[indx[iom(uci+1)]].gety();
+    double vmove1_n1_z = m_coords[indx[uci]].getz() - m_coords[indx[iom(uci+1)]].getz();
+
+    double vmove1_n2_x = m_coords[indx[uci]].getx() - m_coords[indx[iom(uci-1)]].getx();
+    double vmove1_n2_y = m_coords[indx[uci]].gety() - m_coords[indx[iom(uci-1)]].gety();
+    double vmove1_n2_z = m_coords[indx[uci]].getz() - m_coords[indx[iom(uci-1)]].getz();
+
+    m_coords[indx[iom(uci+1)]].setPos(m_coords[indx[iom(uci+1)]].getx() + vmove1_n1_x*0.30,
+                            m_coords[indx[iom(uci+1)]].gety() + vmove1_n1_y*0.30,
+                            m_coords[indx[iom(uci+1)]].getz() + vmove1_n1_z*0.30);
+
+    m_coords[indx[iom(uci-1)]].setPos(m_coords[indx[iom(uci-1)]].getx() + vmove1_n2_x*0.30,
+                            m_coords[indx[iom(uci-1)]].gety() + vmove1_n2_y*0.30,
+                            m_coords[indx[iom(uci-1)]].getz() + vmove1_n2_z*0.30);
+
+    m_coords.erase(m_coords.begin() + indx[uci]);
+    m_nat -= 1;
+
+    return 1;
+}
+
+//perform the shuffle transition for a given octagon and
+int Config::shuffle(long ioct, int idir)
+{
+    //get the index
+    std::vector<long> indx;
+    m_oct[ioct].index(indx);
+
+    //find the undercoordinated atom
+    int uci, nnc = 0;
+    for(int j=0;j<8;j++) {
+        if(m_nb[indx[j]] == 2) {
+            uci = j;
+            nnc++;
+        }
+    }
+    if(nnc != 1) {
+        std::cout << "Error: malformed 8-fold ring" << std::endl;
+        exit(1);
+    }
+
+    //close the gap
+    //vector
+
+    double vmove1_n1_x = m_coords[indx[uci]].getx() - m_coords[indx[iom(uci+3*idir)]].getx();
+    double vmove1_n1_y = m_coords[indx[uci]].gety() - m_coords[indx[iom(uci+3*idir)]].gety();
+    double vmove1_n1_z = m_coords[indx[uci]].getz() - m_coords[indx[iom(uci+3*idir)]].getz();
+
+    double vmove1_n2_x = m_coords[indx[iom(uci+3*idir)]].getx() - m_coords[indx[iom(uci+4*idir)]].getx();
+    double vmove1_n2_y = m_coords[indx[iom(uci+3*idir)]].gety() - m_coords[indx[iom(uci+4*idir)]].gety();
+    double vmove1_n2_z = m_coords[indx[iom(uci+3*idir)]].getz() - m_coords[indx[iom(uci+4*idir)]].getz();
+
+    double vmove1_n3_x = m_coords[indx[uci]].getx() - m_coords[indx[iom(uci-1*idir)]].getx();
+    double vmove1_n3_y = m_coords[indx[uci]].gety() - m_coords[indx[iom(uci-1*idir)]].gety();
+    double vmove1_n3_z = m_coords[indx[uci]].getz() - m_coords[indx[iom(uci-1*idir)]].getz();
+
+    m_coords[indx[uci]].setPos(m_coords[indx[uci]].getx() - vmove1_n1_x*0.3,
+                            m_coords[indx[uci]].gety() - vmove1_n1_y*0.3,
+                            m_coords[indx[uci]].getz() - vmove1_n1_z*0.3);
+
+    m_coords[indx[iom(uci+3*idir)]].setPos(m_coords[indx[iom(uci+3*idir)]].getx() - vmove1_n2_x*0.28,
+                            m_coords[indx[iom(uci+3*idir)]].gety() - vmove1_n2_y*0.28,
+                            m_coords[indx[iom(uci+3*idir)]].getz() - vmove1_n2_z*0.28);
+
+    m_coords[indx[iom(uci+4*idir)]].setPos(m_coords[indx[iom(uci+4*idir)]].getx() - vmove1_n2_x*0.2,
+                            m_coords[indx[iom(uci+4*idir)]].gety() - vmove1_n2_y*0.2,
+                            m_coords[indx[iom(uci+4*idir)]].getz() - vmove1_n2_z*0.2);
+
+    m_coords[indx[iom(uci+2*idir)]].setPos(m_coords[indx[iom(uci+2*idir)]].getx() + vmove1_n2_x*0.25,
+                            m_coords[indx[iom(uci+2*idir)]].gety() + vmove1_n2_y*0.25,
+                            m_coords[indx[iom(uci+2*idir)]].getz() + vmove1_n2_z*0.25);
+
+    m_coords[indx[iom(uci+1*idir)]].setPos(m_coords[indx[iom(uci+1*idir)]].getx() + vmove1_n2_x*0.32,
+                            m_coords[indx[iom(uci+1*idir)]].gety() + vmove1_n2_y*0.32,
+                            m_coords[indx[iom(uci+1*idir)]].getz() + vmove1_n2_z*0.32);
+
+    m_coords[indx[iom(uci-1*idir)]].setPos(m_coords[indx[iom(uci-1*idir)]].getx() + vmove1_n3_x*0.25,
+                            m_coords[indx[iom(uci-1*idir)]].gety() + vmove1_n3_y*0.25,
+                            m_coords[indx[iom(uci-1*idir)]].getz() + vmove1_n3_z*0.25);
+
+    //+2 NN
+    long in1;
+    long in2;
+    if(m_b1[indx[iom(uci+2*idir)]]-1 == indx[iom(uci+1*idir)] && m_b2[indx[iom(uci+2*idir)]]-1 == indx[iom(uci+3*idir)]) {
+        in1 = m_b3[indx[iom(uci+2*idir)]]-1;
+    } else if(m_b1[indx[iom(uci+2*idir)]]-1 == indx[iom(uci+1*idir)] && m_b3[indx[iom(uci+2*idir)]]-1 == indx[iom(uci+3*idir)]){
+        in1 = m_b2[indx[iom(uci+2*idir)]]-1;
+    } else if(m_b2[indx[iom(uci+2*idir)]]-1 == indx[iom(uci+1*idir)] && m_b3[indx[iom(uci+2*idir)]]-1 == indx[iom(uci+3*idir)]){
+        in1 = m_b1[indx[iom(uci+2*idir)]]-1;
+    }
+
+    if(m_b1[indx[iom(uci+3*idir)]]-1 == indx[iom(uci+2*idir)] && m_b2[indx[iom(uci+3*idir)]]-1 == indx[iom(uci+4*idir)]) {
+        in2 = m_b3[indx[iom(uci+3*idir)]]-1;
+    } else if(m_b1[indx[iom(uci+3*idir)]]-1 == indx[iom(uci+2*idir)] && m_b3[indx[iom(uci+3*idir)]]-1 == indx[iom(uci+4*idir)]){
+        in2 = m_b2[indx[iom(uci+3*idir)]]-1;
+    } else if(m_b2[indx[iom(uci+3*idir)]]-1 == indx[iom(uci+2*idir)] && m_b3[indx[iom(uci+3*idir)]]-1 == indx[iom(uci+4*idir)]){
+        in2 = m_b1[indx[iom(uci+3*idir)]]-1;
+    }
+
+    m_coords[in1].setPos(m_coords[in1].getx() + vmove1_n2_x*0.25,
+                            m_coords[in1].gety() + vmove1_n2_y*0.25,
+                            m_coords[in1].getz() + vmove1_n2_z*0.25);
+
+    m_coords[in2].setPos(m_coords[in2].getx() - vmove1_n3_x*0.3,
+                            m_coords[in2].gety() - vmove1_n3_y*0.3,
+                            m_coords[in2].getz() - vmove1_n3_z*0.3);
+
+    return 1;
+}

@@ -14,8 +14,7 @@
 				<Compiler>
 					<Add option="-std=c++0x" />
 					<Add option="-g" />
-					<Add directory="/home/tpt/dislocmmc/dislocMMC/include/" />
-					<Add directory="/home/tpt/dislocmmc/dislocMMC/sources/" />
+					<Add directory="/home/tt200/dislocmmc/dislocMMC/include" />
 				</Compiler>
 			</Target>
 			<Target title="Release">

@@ -165,13 +165,42 @@ int main()
         }
 
     } else if(setup.type() == 3)
-    //do Metropolis-Hastings Monte Carlo
+    //do double climb
     {
-        config.dclimb(1);
+        config.dclimb(0);
         config.relax(setup.lmp());
         config.write(outfile);
-    }
-    else {
+    } else if(setup.type() == 4)
+    //do single climb
+    {
+        config.sclimb(2);
+        config.relax(setup.lmp());
+        config.write(outfile);
+        config.analyse(setup.coff(),bonds,bondc);
+        std::vector<Polygon> octs;
+        long n8 = config.getOcts(octs);
+        std::cout << " 8s: " << n8 << std::endl;
+
+        config.shuffle(0,-1);
+        config.write(outfile);
+        config.relax(setup.lmp());
+        config.write(outfile);
+
+        config.shclimb(0);
+        config.relax(setup.lmp());
+        config.write(outfile);
+
+    } else if(setup.type() == 5)
+    //do single climb on shuffle
+    {
+        config.shclimb(0);
+        config.relax(setup.lmp());
+        config.write(outfile);
+        config.analyse(setup.coff(),bonds,bondc);
+        std::vector<Polygon> octs;
+        long n8 = config.getOcts(octs);
+        std::cout << " 8s: " << n8 << std::endl;
+    } else {
         std::cout << "Invalid type option" << std::endl;
         exit(1);
     }
