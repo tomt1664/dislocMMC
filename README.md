@@ -30,3 +30,5 @@ The code then produces three output files:
 
 The initial structural analysis at the beginning of the calculation is fairly expensive, however after this the overhead of the main code is negligible compared to the LAMMPS optimisations. Therefore for large systems, the speed of the calculation can be dramatically increased using an MPI version of LAMMPS on the appropriate hardware (see the examples/ directory for a setup file).  
 
+Produced using Code::Blocks 
+
